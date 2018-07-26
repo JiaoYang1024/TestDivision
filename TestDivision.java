@@ -1,31 +1,25 @@
 package com.jiaoyang;
 
+
 public class TestDivision {
 
     public static void main(String[] args) {
 
-       /* String[] ArrA = new String[]{"2", "4", "999", "6", "1", "1", "10", "3000", "0","8888","8888"};
-        String[] ArrB = new String[]{"2", "2", "1", "4", "5", "500", "3", "2999", "2","22","23"};
+        String[] ArrA = new String[]{"2", "4", "999", "6", "1", "1", "10", "3000", "0", "8888", "8888", "99999"};
+        String[] ArrB = new String[]{"2", "2", "1", "4", "5", "500", "3", "2999", "2", "22", "23", "99999"};
         for (int i = 0; i < ArrA.length; i++) {
             String A = ArrA[i];
             String B = ArrB[i];
             System.out.println(A + " / " + B + " = " + MathUtil.division(A, B));
-        }*/
+            System.out.println(A + " + " + B + "  =  " + MathUtil.calculate(A, B, new PlusResulter()));
+        }
 
-       /* String[] ArrC = new String[]{"2", "4", "999", "6", "1", "1", "10", "3000", "0","8888","8888","1111","3999"};
-        String[] ArrD = new String[]{"2", "2", "1", "4", "5", "500", "3", "2999", "2","22","23","2222","3998"};
-        for (int i = 0; i < ArrC.length; i++) {
-            String A = ArrC[i];
-            String B = ArrD[i];
-            System.out.println(A + " >= " + B + "  =  " + MathUtil.isBiggerOrEqual(A, B));
-        }*/
-
-        String[] ArrC = new String[]{"2", "4", "999", "6",   "10", "3000", "8888","8888","3999"};
-        String[] ArrD = new String[]{"2", "2", "1", "4",   "3", "2999", "22","23","3998"};
-        for (int i = 0; i < ArrC.length; i++) {
-            String A = ArrC[i];
-            String B = ArrD[i];
-            System.out.println(A + " >= " + B + "  =  " + MathUtil.subtract(A, B));
+        String[] ArrE = new String[]{"2", "4", "12", "500", "999", "6", "10", "3000", "8888", "8888", "3999", "50000"};
+        String[] ArrF = new String[]{"2", "2", "8", "0", "1", "4", "3", "2999", "22", "23", "3998", "50000"};
+        for (int i = 0; i < ArrE.length; i++) {
+            String A = ArrE[i];
+            String B = ArrF[i];
+            System.out.println(A + " - " + B + "  =  " + MathUtil.calculate(A, B, new SubtractResulter()));
         }
     }
 }
@@ -35,36 +29,38 @@ class MathUtil {
     /**
      * 计算两个长整数的商
      *
-     * @param paramA        被除数
-     * @param paramB        除数
-     * @return 商 ...余数  
+     * @param paramA 被除数
+     * @param paramB 除数
+     * @return 商 ...余数
      */
     static String division(String paramA, String paramB) {
         StringBuilder result = new StringBuilder();
         String quotient = "0";
         String remainder = paramA;
-            while (isBiggerOrEqual(remainder, paramB)) {
-                remainder = subtract(remainder, paramB);
-                quotient = plus(quotient, "1");
-            }
-                result.append(quotient);
+        while (isBiggerOrEqual(remainder, paramB)) {
+            remainder = calculate(remainder, paramB, new SubtractResulter());
+            quotient = calculate(quotient, "1", new PlusResulter());
+        }
+        result.append(quotient);
 
-                if (!remainder.equals("0")){
-                    result.append(" ...");
-                    result.append(remainder);
-                }
+        if (!remainder.equals("0")) {
+            result.append(" ...");
+            result.append(remainder);
+        }
         return result.toString();
     }
 
+
     /**
-     * 计算两个长整数的和
+     * 计算两个长整数的和或者差,做减法时只考虑A>=B的情况
      *
-     * @param paramA 参数A
-     * @param paramB 参数B
-     * @return 和
+     * @param paramA   参数A
+     * @param paramB   参数B
+     * @param resulter 根据运算方法传入不同的resulter
+     * @return 结果
      */
-    static String plus(String paramA, String paramB) {
-        Resulter resulter = new Resulter();
+    static String calculate(String paramA, String paramB, Resulter resulter) {
+
 
         int length = Math.max(paramA.length(), paramB.length());
 
@@ -72,52 +68,10 @@ class MathUtil {
 
             int a = getValue(paramA, paramA.length() - 1 - i);
             int b = getValue(paramB, paramB.length() - 1 - i);
-            resulter.append(a + b);
+            resulter.append(a, b);
         }
 
         return resulter.toString();
-    }
-
-
-    /**
-     * 计算两个长整数的差，不考虑负数的情况
-     *
-     * @param paramA 参数A
-     * @param paramB 参数B
-     * @return 差
-     */
-    static String subtract(String paramA, String paramB) {
-
-        /*if (paramA.equals(paramB)) {
-            return "0";                   //要不要呢？？？  是为了代码更简洁？还是为了效率更高？
-        }*/
-
-        SubtractResulter resulter = new SubtractResulter();
-
-
-        int length = paramA.length();
-
-        for (int i = 0; i < length; i++) {
-
-            int a = getValue(paramA, paramA.length() - 1 - i);
-            int b = getValue(paramB, paramB.length() - 1 - i);
-            resulter.append(a - b);
-        }
-
-        return resulter.toString();
-    }
-
-
-
-
-    private static int getValue(String param, int index) {
-        if (index >= 0) {
-
-            return charToInt(param.charAt(index));
-        } else {
-            return 0;
-        }
-
     }
 
 
@@ -128,7 +82,7 @@ class MathUtil {
      * @param paramB 参数B
      * @return
      */
-     static boolean isBiggerOrEqual(String paramA, String paramB) {
+    static boolean isBiggerOrEqual(String paramA, String paramB) {
 
         int lengthOfParamA = paramA.length();
         int lengthOfParamB = paramB.length();
@@ -138,8 +92,17 @@ class MathUtil {
         } else if (lengthOfParamA < lengthOfParamB) {
             return false;
         } else {
-            return paramA.compareTo(paramB) >= 0;   //compareTo对我的感触比较大，如果JavaApi没有提供这个方法，我能不能
+            return paramA.compareTo(paramB) >= 0;   //compareTo对我的感触比较大，如果JavaApi没有提供这个方法，是不是也可以
         }                                           //自己封装一个呢？
+
+    }
+
+    private static int getValue(String param, int index) {
+        if (index >= 0) {
+            return charToInt(param.charAt(index));
+        } else {
+            return 0;
+        }
 
     }
 
@@ -149,60 +112,68 @@ class MathUtil {
     }
 
 
-
 }
 
-class Resulter {
+class PlusResulter extends Resulter {
 
-    private StringBuilder content = new StringBuilder();
-    private int added = 0;
 
-    void append(int result) {
-        int tempResult = result + added;
-        int rest = tempResult % 10;
-        added = tempResult / 10;
+    void append(int numberA, int numberB) {
+        int result = numberA + numberB + tempNumber;
+        int rest = result % 10;
+        tempNumber = result / 10;
 
         content.append(rest);
     }
 
 
-    public String toString() {
-
-        if (added != 0) {
-            content.append(added);
+     void handleResult() {
+        if (tempNumber != 0) {
+            content.append(tempNumber);
         }
-        return content.reverse().toString();
     }
 
 }
 
-class SubtractResulter {
+class SubtractResulter extends Resulter {
 
-    StringBuilder content = new StringBuilder();
 
-    int lendNumber = 0;
+    public void append(int numberA, int numberB) {
 
-    void append(int result){
-        int  tempResult = result - lendNumber;
-          /* if (tempResult >= 0){
-               lendNumber = 0;
+        int result = numberA - numberB - tempNumber;
+           /*if (result >= 0){
+               tempNumber = 0;
            }else {
-               tempResult += 10;
-               lendNumber =1;
+               result += 10;
+               tempNumber =1;
            }*/
 
         //要不要改成三目运算符？
-        lendNumber = tempResult >= 0 ? 0 : 1;
-        tempResult += tempResult >= 0 ? 0 :10;
-        content.append(tempResult);
+        tempNumber = result >= 0 ? 0 : 1;
+        result += result >= 0 ? 0 : 10;
+        content.append(result);
     }
 
 
-    public String toString(){
-        while (content.charAt(content.length() -1) == '0' && content.length() > 1 ) {
+     void handleResult() {
+        while (content.charAt(content.length() - 1) == '0' && content.length() > 1) {
             content.deleteCharAt(content.length() - 1);
         }
-        return content.reverse().toString();
+    }
+}
 
+abstract class Resulter {      //写成接口还是写成抽象类？
+
+    StringBuilder content = new StringBuilder();
+
+    int tempNumber = 0;
+
+    abstract void append(int numberA, int numberB);
+
+    abstract void handleResult();
+
+    public  String toString(){
+
+        handleResult();
+        return content.reverse().toString();
     }
 }
