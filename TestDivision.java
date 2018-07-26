@@ -92,8 +92,8 @@ class MathUtil {
         } else if (lengthOfParamA < lengthOfParamB) {
             return false;
         } else {
-            return paramA.compareTo(paramB) >= 0;   //compareTo对我的感触比较大，如果JavaApi没有提供这个方法，是不是也可以
-        }                                           //自己封装一个呢？
+            return paramA.compareTo(paramB) >= 0;
+        }
 
     }
 
@@ -140,16 +140,9 @@ class SubtractResulter extends Resulter {
     public void append(int numberA, int numberB) {
 
         int result = numberA - numberB - tempNumber;
-           /*if (result >= 0){
-               tempNumber = 0;
-           }else {
-               result += 10;
-               tempNumber =1;
-           }*/
-
-        //要不要改成三目运算符？
         tempNumber = result >= 0 ? 0 : 1;
         result += result >= 0 ? 0 : 10;
+
         content.append(result);
     }
 
@@ -161,7 +154,7 @@ class SubtractResulter extends Resulter {
     }
 }
 
-abstract class Resulter {      //写成接口还是写成抽象类？
+abstract class Resulter {
 
     StringBuilder content = new StringBuilder();
 
