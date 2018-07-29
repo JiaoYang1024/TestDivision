@@ -116,19 +116,20 @@ class MathUtil {
 
 class PlusResulter extends Resulter {
 
+    int add = 0;
 
     void append(int numberA, int numberB) {
-        int result = numberA + numberB + tempNumber;
+        int result = numberA + numberB + add;
         int rest = result % 10;
-        tempNumber = result / 10;
+        add = result / 10;
 
         content.append(rest);
     }
 
 
      void handleResult() {
-        if (tempNumber != 0) {
-            content.append(tempNumber);
+        if (add != 0) {
+            content.append(add);
         }
     }
 
@@ -136,11 +137,12 @@ class PlusResulter extends Resulter {
 
 class SubtractResulter extends Resulter {
 
+    int rentNumber = 0;
 
     public void append(int numberA, int numberB) {
 
-        int result = numberA - numberB - tempNumber;
-        tempNumber = result >= 0 ? 0 : 1;
+        int result = numberA - numberB - rentNumber;
+        rentNumber = result >= 0 ? 0 : 1;
         result += result >= 0 ? 0 : 10;
 
         content.append(result);
@@ -158,7 +160,7 @@ abstract class Resulter {
 
     StringBuilder content = new StringBuilder();
 
-    int tempNumber = 0;
+
 
     abstract void append(int numberA, int numberB);
 
