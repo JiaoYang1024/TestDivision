@@ -11,20 +11,29 @@ public class TestDivision {
             String A = ArrA[i];
             String B = ArrB[i];
             System.out.println(A + " / " + B + " = " + MathUtil.division(A, B));
-            System.out.println(A + " + " + B + "  =  " + MathUtil.calculate(A, B, new PlusResulter()));
+            //System.out.println(A + " + " + B + "  =  " + MathUtil.calculate(A, B, new CarryResulter(CarryResulter.TYPE_PLUS)));
         }
 
-        String[] ArrE = new String[]{"2", "4", "12", "500", "999", "6", "10", "3000", "8888", "8888", "3999", "50000"};
+        /*String[] ArrE = new String[]{"2", "4", "12", "500", "999", "6", "10", "3000", "8888", "8888", "3999", "50000"};
         String[] ArrF = new String[]{"2", "2", "8", "0", "1", "4", "3", "2999", "22", "23", "3998", "50000"};
         for (int i = 0; i < ArrE.length; i++) {
             String A = ArrE[i];
             String B = ArrF[i];
             System.out.println(A + " - " + B + "  =  " + MathUtil.calculate(A, B, new SubtractResulter()));
-        }
+        }*/
+
+        /*String[] ArrG = new String[]{"2", "4", "12", "500", "999", "6", "10", "3000", "8888", "8888", "3999", "50000"};
+        int[] ArrH = new int[]{2, 2, 8, 0, 1, 4, 3, 9, 2, 2,8, 5};
+        for (int i = 0; i < ArrG.length; i++) {
+            String A = ArrG[i];
+            int B = ArrH[i];
+            System.out.println(A + " * " + B + "  =  " + MathUtil.singleMultiply(A,B));
+        }*/
     }
 }
 
 class MathUtil {
+
 
     /**
      * 计算两个长整数的商
@@ -35,19 +44,44 @@ class MathUtil {
      */
     static String division(String paramA, String paramB) {
         StringBuilder result = new StringBuilder();
-        String quotient = "0";
-        String remainder = paramA;
-        while (isBiggerOrEqual(remainder, paramB)) {
-            remainder = calculate(remainder, paramB, new SubtractResulter());
-            quotient = calculate(quotient, "1", new PlusResulter());
+        StringBuilder quotient = new StringBuilder();
+        StringBuilder remainder = new StringBuilder();
+        for (int i = 0; i < paramA.length(); i++) {
+            remainder.append(paramA.charAt(i));
+            if (remainder.charAt(0) == '0'&& remainder.length() >1) {
+                remainder.deleteCharAt(0);
+            }
+            for (int j = 9; j >= 0; j--) {
+                String product = singleMultiply(paramB, j);
+
+                if (isBiggerOrEqual(remainder.toString(), product)) {
+                    remainder.replace(0, remainder.length(), calculate(remainder.toString(), product, new SubtractResulter()));
+                    quotient.append(j);
+                    break;
+                }
+            }
+        }
+        while (quotient.charAt(0) == '0' && quotient.length() > 1) {
+            quotient.deleteCharAt(0);
         }
         result.append(quotient);
-
-        if (!remainder.equals("0")) {
+        if (!remainder.toString().equals("0")) {
             result.append(" ...");
             result.append(remainder);
         }
         return result.toString();
+    }
+
+     static String singleMultiply(String paramA, int paramB) {
+        if (paramB == 0){
+            return "0";
+        }
+        CarryResulter resulter = new CarryResulter(CarryResulter.TYPE_MULTIPLY);
+        for (int i = 0; i < paramA.length(); i++) {
+            int a = charToInt(paramA.charAt(paramA.length() - 1 - i));
+            resulter.append(a,paramB);
+        }
+        return resulter.toString();
     }
 
 
@@ -114,12 +148,38 @@ class MathUtil {
 
 }
 
-class PlusResulter extends Resulter {
 
-    int add = 0;
+class CarryResulter extends Resulter {
+    //我一开始想，把CarryResulter类也弄成抽象类，一个抽象方法叫calculate.再弄两个类,加法类和乘法类，继承这个类。但是
+    //这样抽象类里就有add 临时变量了，就放弃了。
+   private int add = 0;
+   private   int type;
+    public static final int TYPE_PLUS = 0;
+    public static final int TYPE_MULTIPLY = 1;
+
+    public CarryResulter(int type) {
+        this.type = type;
+    }
+
+   private int calculate(int numberA, int numberB) {
+        int result = 0;
+        switch (type) {
+            case TYPE_PLUS:
+                result = numberA + numberB;
+                break;
+            case TYPE_MULTIPLY:
+                result = numberA * numberB;
+                break;
+                
+        }
+        return  result;
+
+    }
+
+    
 
     void append(int numberA, int numberB) {
-        int result = numberA + numberB + add;
+        int result = calculate(numberA, numberB) + add;
         int rest = result % 10;
         add = result / 10;
 
@@ -127,7 +187,7 @@ class PlusResulter extends Resulter {
     }
 
 
-     void handleResult() {
+    void handleResult() {
         if (add != 0) {
             content.append(add);
         }
@@ -149,7 +209,7 @@ class SubtractResulter extends Resulter {
     }
 
 
-     void handleResult() {
+    void handleResult() {
         while (content.charAt(content.length() - 1) == '0' && content.length() > 1) {
             content.deleteCharAt(content.length() - 1);
         }
@@ -161,12 +221,11 @@ abstract class Resulter {
     StringBuilder content = new StringBuilder();
 
 
-
     abstract void append(int numberA, int numberB);
 
     abstract void handleResult();
 
-    public  String toString(){
+    public String toString() {
 
         handleResult();
         return content.reverse().toString();
