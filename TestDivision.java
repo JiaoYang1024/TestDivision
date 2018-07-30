@@ -1,4 +1,4 @@
-package com.jiaoyang;
+package com.jiaoyang.TestDivision;
 
 
 public class TestDivision {
@@ -11,26 +11,33 @@ public class TestDivision {
             String A = ArrA[i];
             String B = ArrB[i];
             System.out.println(A + " / " + B + " = " + MathUtil.division(A, B));
-            //System.out.println(A + " + " + B + "  =  " + MathUtil.calculate(A, B, new CarryResulter(CarryResulter.TYPE_PLUS)));
+            //System.out.println(A + " + " + B + "  =  " + MathUtil.plus(A, B));
         }
 
-        /*String[] ArrE = new String[]{"2", "4", "12", "500", "999", "6", "10", "3000", "8888", "8888", "3999", "50000"};
-        String[] ArrF = new String[]{"2", "2", "8", "0", "1", "4", "3", "2999", "22", "23", "3998", "50000"};
+       /* String[] ArrE = new String[]{"2",  "12", "500", "999",  "3000", "8888",  "3999", "50000","0","8888888"};
+        String[] ArrF = new String[]{"2",  "8",  "0",     "1",    "2999", "22",   "3998", "50000","666","100000000"};
         for (int i = 0; i < ArrE.length; i++) {
             String A = ArrE[i];
             String B = ArrF[i];
-            System.out.println(A + " - " + B + "  =  " + MathUtil.calculate(A, B, new SubtractResulter()));
+            System.out.println(A + " - " + B + "  =  " + MathUtil.subtract(A, B));
         }*/
 
-        /*String[] ArrG = new String[]{"2", "4", "12", "500", "999", "6", "10", "3000", "8888", "8888", "3999", "50000"};
-        int[] ArrH = new int[]{2, 2, 8, 0, 1, 4, 3, 9, 2, 2,8, 5};
+        /*String[] ArrG = new String[]{"2",  "12", "500", "999", "6", "10", "3000",  "3999", "50000","1234"};
+        String[] ArrH = new String[]{"2",  "8",   "0",   "1",  "4",  "3",  "9",      "8",    "5","5678"};
+
         for (int i = 0; i < ArrG.length; i++) {
             String A = ArrG[i];
-            int B = ArrH[i];
-            System.out.println(A + " * " + B + "  =  " + MathUtil.singleMultiply(A,B));
+            String B = ArrH[i];
+            System.out.println(A + " * " + B + "  =  " + MathUtil.multiply(A,B));
         }*/
     }
 }
+
+
+
+
+
+
 
 class MathUtil {
 
@@ -43,70 +50,109 @@ class MathUtil {
      * @return 商 ...余数
      */
     static String division(String paramA, String paramB) {
-        StringBuilder result = new StringBuilder();
-        StringBuilder quotient = new StringBuilder();
-        StringBuilder remainder = new StringBuilder();
-        for (int i = 0; i < paramA.length(); i++) {
-            remainder.append(paramA.charAt(i));
-            if (remainder.charAt(0) == '0'&& remainder.length() >1) {
-                remainder.deleteCharAt(0);
-            }
-            for (int j = 9; j >= 0; j--) {
-                String product = singleMultiply(paramB, j);
+        DivesionResulter resulter = new DivesionResulter(paramB);
 
-                if (isBiggerOrEqual(remainder.toString(), product)) {
-                    remainder.replace(0, remainder.length(), calculate(remainder.toString(), product, new SubtractResulter()));
-                    quotient.append(j);
-                    break;
-                }
-            }
-        }
-        while (quotient.charAt(0) == '0' && quotient.length() > 1) {
-            quotient.deleteCharAt(0);
-        }
-        result.append(quotient);
-        if (!remainder.toString().equals("0")) {
-            result.append(" ...");
-            result.append(remainder);
-        }
-        return result.toString();
-    }
-
-     static String singleMultiply(String paramA, int paramB) {
-        if (paramB == 0){
-            return "0";
-        }
-        CarryResulter resulter = new CarryResulter(CarryResulter.TYPE_MULTIPLY);
         for (int i = 0; i < paramA.length(); i++) {
-            int a = charToInt(paramA.charAt(paramA.length() - 1 - i));
-            resulter.append(a,paramB);
+            resulter.divide(paramA.charAt(i));
         }
-        return resulter.toString();
+
+        return resulter.toResult();
     }
 
 
     /**
-     * 计算两个长整数的和或者差,做减法时只考虑A>=B的情况
+     * 计算两个长整数的和
+     *
+     * @param paramA   参数A
+     * @param paramB   参数B
+     * @return 结果
+     */
+    static String plus(String paramA, String paramB) {
+
+        return calculate(paramA,paramB,new CarryResulter(CarryResulter.TYPE_PLUS));
+    }
+
+    /**
+     * 计算两个长整数的差
+     *
+     * @param paramA   参数A
+     * @param paramB   参数B
+     * @return 结果
+     */
+    static String subtract(String paramA, String paramB) {
+
+        String difference;
+
+        if (isBiggerOrEqual(paramA,paramB)){
+             difference =  calculate(paramA,paramB,new SubtractResulter());
+        }else {
+            difference =  "-"+calculate(paramB,paramA,new SubtractResulter());
+        }
+
+        return difference;
+    }
+
+    /**
+     * 计算两个长整数的乘积
+     *
+     * @param paramA   参数A
+     * @param paramB   参数B
+     * @return 结果
+     */
+    static String multiply(String paramA, String paramB) {
+
+        Adder adder = new Adder();
+        for (int i = paramA.length()-1 ;i >=0 ; i--){
+           String tempResult = calculate(paramA.substring(i,i+1),paramB,new CarryResulter(CarryResulter.TYPE_MULTIPLY));
+           tempResult = moveLeft(tempResult,paramA.length()-1-i);
+           adder.add(tempResult);
+        }
+
+        return adder.toResult();
+    }
+
+
+
+    /**
+     * 计算两个长整数的和或者差,也可以用来计算个位数与长整数的乘积
      *
      * @param paramA   参数A
      * @param paramB   参数B
      * @param resulter 根据运算方法传入不同的resulter
      * @return 结果
      */
-    static String calculate(String paramA, String paramB, Resulter resulter) {
+    private static String calculate(String paramA, String paramB, Resulter resulter) {
 
 
         int length = Math.max(paramA.length(), paramB.length());
 
         for (int i = 0; i < length; i++) {
 
-            int a = getValue(paramA, paramA.length() - 1 - i);
-            int b = getValue(paramB, paramB.length() - 1 - i);
+            int a = resulter.getValue(paramA, paramA.length() - 1 - i);
+            int b = resulter.getValue(paramB, paramB.length() - 1 - i);
             resulter.append(a, b);
         }
 
         return resulter.toString();
     }
+
+
+    /**
+     * 计算乘法竖式时,把需要相加的结果进行左移，空位补零
+     *
+     * @param number   需要左移的数字
+     * @param size   左移的位数
+     * @return 结果
+     */
+    private static String moveLeft(String number,int size){
+           StringBuilder result = new StringBuilder(number);
+        for (int i=1;i<= size;i++){
+            result.append("0");
+        }
+
+        return result.toString();
+    }
+
 
 
     /**
@@ -116,7 +162,7 @@ class MathUtil {
      * @param paramB 参数B
      * @return
      */
-    static boolean isBiggerOrEqual(String paramA, String paramB) {
+     static boolean isBiggerOrEqual(String paramA, String paramB) {
 
         int lengthOfParamA = paramA.length();
         int lengthOfParamB = paramB.length();
@@ -130,8 +176,14 @@ class MathUtil {
         }
 
     }
-
-    private static int getValue(String param, int index) {
+    /**
+     * 从字符串中提取指定位置的数字
+     *
+     * @param param 字符串
+     * @param index 位置索引
+     * @return
+     */
+     static int getValue(String param, int index) {
         if (index >= 0) {
             return charToInt(param.charAt(index));
         } else {
@@ -140,14 +192,85 @@ class MathUtil {
 
     }
 
+    /**
+     * 从字符串中提取指定位置的数字,用于乘法运算
+     *
+     * @param param 字符串
+     * @param index 位置索引
+     * @return
+     */
+    static int getValueForMultiply(String param, int index) {
+        if (index >= 0) {
+            return charToInt(param.charAt(index));
+        } else {
+            return charToInt(param.charAt(0));
+        }
+
+    }
+    /**
+     * char类型转化为int类型
+     * @param c
+     * @return
+     */
     private static int charToInt(char c) {
 
         return c - '0';
     }
 
 
+    /**
+     * 格式化字符串，去掉无用的0,如：000 -> 0 ，014-> 14
+     * @param s
+     */
+     static void formatString(StringBuilder s) {
+
+        while (s.charAt(0) == '0' && s.length() > 1) {
+            s.deleteCharAt(0);
+        }
+    }
+
+
 }
 
+class DivesionResulter {
+  //这个类需不需要强行继承Resulter类。
+    private String divisor;
+    private StringBuilder result = new StringBuilder();
+    private StringBuilder quotient = new StringBuilder();
+    private StringBuilder remainder = new StringBuilder();
+
+
+    public DivesionResulter(String divisor){
+        this.divisor = divisor;
+    }
+
+    void divide(char appendNumber){
+        remainder.append(appendNumber);
+        MathUtil.formatString(remainder);
+        for (int j = 9; j >= 0; j--) {
+            String product = MathUtil.multiply(j+"", this.divisor);
+
+            if (MathUtil.isBiggerOrEqual(remainder.toString(), product)) {
+                remainder.replace(0, remainder.length(), MathUtil.subtract(remainder.toString(), product));
+                quotient.append(j);
+                break;
+            }
+        }
+    }
+
+    String toResult(){
+
+        MathUtil.formatString(quotient);
+        result.append(quotient);
+        if (!remainder.toString().equals("0")) {
+            result.append(" ...");
+            result.append(remainder);
+        }
+
+        return result.toString();
+    }
+
+}
 
 class CarryResulter extends Resulter {
     //我一开始想，把CarryResulter类也弄成抽象类，一个抽象方法叫calculate.再弄两个类,加法类和乘法类，继承这个类。但是
@@ -172,12 +295,13 @@ class CarryResulter extends Resulter {
                 break;
                 
         }
+
         return  result;
 
     }
 
-    
 
+    @Override
     void append(int numberA, int numberB) {
         int result = calculate(numberA, numberB) + add;
         int rest = result % 10;
@@ -186,34 +310,51 @@ class CarryResulter extends Resulter {
         content.append(rest);
     }
 
-
+    @Override
     void handleResult() {
         if (add != 0) {
             content.append(add);
         }
+        MathUtil.formatString(content.reverse());
+    }
+
+    @Override
+    int getValue(String number, int index) {
+        if (this.type == TYPE_PLUS){
+            return MathUtil.getValue(number,index);
+        }else {
+            return MathUtil.getValueForMultiply(number,index);
+        }
+
     }
 
 }
 
 class SubtractResulter extends Resulter {
 
-    int rentNumber = 0;
+  private int borrowedNumber = 0;
 
+    @Override
     public void append(int numberA, int numberB) {
 
-        int result = numberA - numberB - rentNumber;
-        rentNumber = result >= 0 ? 0 : 1;
+        int result = numberA - numberB - borrowedNumber;
+        borrowedNumber = result >= 0 ? 0 : 1;
         result += result >= 0 ? 0 : 10;
 
         content.append(result);
     }
 
-
+    @Override
     void handleResult() {
-        while (content.charAt(content.length() - 1) == '0' && content.length() > 1) {
-            content.deleteCharAt(content.length() - 1);
-        }
+        MathUtil.formatString(content.reverse());
     }
+
+    @Override
+    int getValue(String number, int index) {
+        return MathUtil.getValue(number,index);
+    }
+
+
 }
 
 abstract class Resulter {
@@ -224,10 +365,24 @@ abstract class Resulter {
     abstract void append(int numberA, int numberB);
 
     abstract void handleResult();
-
+    abstract  int getValue(String number, int index);
     public String toString() {
-
         handleResult();
-        return content.reverse().toString();
+        return content.toString();
     }
+}
+
+
+class Adder {
+
+    private String result = "0";
+
+    void add(String extra){
+       result = MathUtil.plus(result,extra);
+    }
+
+     String toResult(){
+        return result;
+    }
+
 }
