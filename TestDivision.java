@@ -233,7 +233,7 @@ class MathUtil {
 }
 
 class DivesionResulter {
-  //这个类需不需要强行继承Resulter类。
+
     private String divisor;
     private StringBuilder result = new StringBuilder();
     private StringBuilder quotient = new StringBuilder();
@@ -273,8 +273,7 @@ class DivesionResulter {
 }
 
 class CarryResulter extends Resulter {
-    //我一开始想，把CarryResulter类也弄成抽象类，一个抽象方法叫calculate.再弄两个类,加法类和乘法类，继承这个类。但是
-    //这样抽象类里就有add 临时变量了，就放弃了。
+
    private int add = 0;
    private   int type;
     public static final int TYPE_PLUS = 0;
